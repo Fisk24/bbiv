@@ -30,7 +30,7 @@ HEAD = """<head>
 """
 
 WEBM = """
-    <video width="100%" height="100%" controls>
+    <video width="100%" height="100%" autoplay loop>
         <source src="file://{video}" type="video/webm">
     </video>
 """
@@ -63,27 +63,50 @@ class Main(QMainWindow):
         ### LOAD UI FILES ###
         self.ui = uic.loadUi("./main.ui", self)
         self.ui.mainView.settings().setAttribute(QWebSettings.PluginsEnabled, True)
-        self.ui.mainView.load(QUrl("http://www.plateinteractive.com/"))
+        #self.ui.mainView.load(QUrl("http://www.plateinteractive.com/")) # Flash test...
         # VARS
         self.dir   = ""
         self.index = 0
         self.files = []
+        self.supported = "(\.png|\.jpeg|\.jpg|\.gif|\.swf|\.webm)"
         self.imgexts = "(\.png|\.jpeg|\.jpg|\.gif)"
 
         # CONNECTIONS #
         self.nextToolButton.clicked.connect(self.goNext)
         self.prevToolButton.clicked.connect(self.goPrev)
+        self.openToolButton.clicked.connect(self.openSupportedFile)
 
         # MAIN STEPS
+        self.setInitialWindowTitle()
 
         if args.file:
-            self.initFolder()
+            if os.path.isfile(args.file):
+                self.initFile()
+            elif os.path.isdir(args.file):
+                self.initFolder()
 
-    def initFolder(self):
+    def openSupportedFile(self):
+        file_string = QFileDialog.getOpenFileName(self)
+        self.identifyStartingDirectory(file_string)
+        self.getFilesFromStartingDirectory()
+        self.identifyStartingFileIndex(file_string) 
+        self.loadMedia(file_string)
+        self.ui.nextToolButton.setEnabled(True)
+        self.ui.prevToolButton.setEnabled(True)
+
+    def initFile(self):
         self.identifyStartingDirectory()
         self.getFilesFromStartingDirectory()
         self.identifyStartingFileIndex() 
         self.loadMedia(args.file)
+        self.ui.nextToolButton.setEnabled(True)
+        self.ui.prevToolButton.setEnabled(True)
+
+    def initFolder(self):
+        self.identifyStartingDirectory()
+        self.getFilesFromStartingDirectory()
+        self.index = 0
+        self.loadMedia(self.files[0])
         self.ui.nextToolButton.setEnabled(True)
         self.ui.prevToolButton.setEnabled(True)
 
@@ -103,22 +126,25 @@ class Main(QMainWindow):
 
         self.loadMedia(item)
         self.ui.statusbar.showMessage(item, 2000)
-        self.ui.setWindowTitle(item)
+        self.ui.setWindowTitle("{i}: {n}".format(i=self.index, n=item))
 
     def wrapIndex(self):
-        print(len(self.files))
-        print(self.index)
+        #print(len(self.files))
+        #print(self.index)
         if self.index > len(self.files)-1:
             self.index = 0
         elif self.index < 0:
             self.index = len(self.files)-1
 
-    def identifyStartingDirectory(self):
-        self.dir = os.path.dirname(os.path.realpath(args.file))
-        print(self.dir)
+    def identifyStartingDirectory(self, file=args.file):
+        if os.path.isfile(file):
+            self.dir = os.path.dirname(os.path.realpath(file))
+            print(self.dir)
+        else:
+            self.dir = file
 
-    def identifyStartingFileIndex(self):
-        self.index = self.files.index(args.file)
+    def identifyStartingFileIndex(self, file=args.file):
+        self.index = self.files.index(file)
         print(self.index)
 
     def loadMedia(self, uri):
@@ -145,9 +171,13 @@ class Main(QMainWindow):
         d = self.dir+"/"
         x = []
         for i in os.listdir(d):
-            if os.path.isfile(d+i):
+            if re.search(self.supported, i) and os.path.isfile(d+i):
                 x.append(d+i)
         self.files = x
+
+    def setInitialWindowTitle(self):
+        # this function will set the window title when the application starts
+        pass
 
     def showFiles(self):
         for i in self.files:
