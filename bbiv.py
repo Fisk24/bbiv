@@ -6,6 +6,8 @@ from PyQt4.QtGui  import *
 from PyQt4.QtCore import *
 from PyQt4.QtWebKit import *
 
+from settings import Settings
+
 HEAD = """<head>
     <style>
         div.image img {
@@ -15,7 +17,7 @@ HEAD = """<head>
             top: 50%;
             left: 50%;
             margin-right: -50%;
-            transform: translate(-50%, -50%) }
+            transform: translate(-50%, -50%) } 
 
         div.vid video {
             margin: 0;
@@ -37,7 +39,7 @@ WEBM = """
 
 SWF = """<center>
     scale me!
-    <object width="1000px" height="1000px">
+    <object width="100%" height="100%">
         <param name="movie" value="file://{flash}" />
 	<param name="quality" value="high" />
 	<PARAM NAME="SCALE" VALUE="exactfit" />
@@ -75,9 +77,21 @@ class Main(QMainWindow):
         self.nextToolButton.clicked.connect(self.goNext)
         self.prevToolButton.clicked.connect(self.goPrev)
         self.openToolButton.clicked.connect(self.openSupportedFile)
+        self.settToolButton.clicked.connect(self.editSettings)
+
+        self.rSidePrev.clicked.connect(self.goPrev)
+        self.rSideNext.clicked.connect(self.goNext)
+        self.rSideOpen.clicked.connect(self.openSupportedFile)
+        self.rSideSettings.clicked.connect(self.editSettings)
+
+        self.lSidePrev.clicked.connect(self.goPrev)
+        self.lSideNext.clicked.connect(self.goNext)
+        self.lSideOpen.clicked.connect(self.openSupportedFile)
+        self.lSideSettings.clicked.connect(self.editSettings)
 
         # MAIN STEPS
         self.setInitialWindowTitle()
+        self.setLayoutRighty()
 
         if args.file:
             if os.path.isfile(args.file):
@@ -85,14 +99,18 @@ class Main(QMainWindow):
             elif os.path.isdir(args.file):
                 self.initFolder()
 
+    def editSettings(self):
+        Settings.showSettings(self)
+
     def openSupportedFile(self):
         file_string = QFileDialog.getOpenFileName(self)
-        self.identifyStartingDirectory(file_string)
-        self.getFilesFromStartingDirectory()
-        self.identifyStartingFileIndex(file_string) 
-        self.loadMedia(file_string)
-        self.ui.nextToolButton.setEnabled(True)
-        self.ui.prevToolButton.setEnabled(True)
+        if file_string:
+            self.identifyStartingDirectory(file_string)
+            self.getFilesFromStartingDirectory()
+            self.identifyStartingFileIndex(file_string) 
+            self.loadMedia(file_string)
+            self.ui.nextToolButton.setEnabled(True)
+            self.ui.prevToolButton.setEnabled(True)
 
     def initFile(self):
         self.identifyStartingDirectory()
@@ -101,6 +119,12 @@ class Main(QMainWindow):
         self.loadMedia(args.file)
         self.ui.nextToolButton.setEnabled(True)
         self.ui.prevToolButton.setEnabled(True)
+        self.ui.sideNextToolButton.setEnabled(True)
+        self.ui.sidePrevToolButton.setEnabled(True)
+        self.ui.rSideNext.setEnabled(True)
+        self.ui.rSidePrev.setEnabled(True)
+        self.ui.lSideNext.setEnabled(True)
+        self.ui.lSidePrev.setEnabled(True)
 
     def initFolder(self):
         self.identifyStartingDirectory()
@@ -109,6 +133,38 @@ class Main(QMainWindow):
         self.loadMedia(self.files[0])
         self.ui.nextToolButton.setEnabled(True)
         self.ui.prevToolButton.setEnabled(True)
+        self.ui.sideNextToolButton.setEnabled(True)
+        self.ui.sidePrevToolButton.setEnabled(True)
+        self.ui.rSideNext.setEnabled(True)
+        self.ui.rSidePrev.setEnabled(True)
+        self.ui.lSideNext.setEnabled(True)
+        self.ui.lSidePrev.setEnabled(True)
+
+    def setLayoutRighty(self):
+        # Enable this layout
+        self.ui.rSideNext.setVisible(True)
+        self.ui.rSidePrev.setVisible(True)
+        self.ui.rSideOpen.setVisible(True)
+        self.ui.rSideShuffle.setVisible(True)
+        self.ui.rSideFullscreen.setVisible(True)
+        self.ui.rSideSettings.setVisible(True)
+        # Disable all other
+        self.ui.lSideNext.setVisible(False)
+        self.ui.lSidePrev.setVisible(False)
+        self.ui.lSideOpen.setVisible(False)
+        self.ui.lSideShuffle.setVisible(False)
+        self.ui.lSideFullscreen.setVisible(False)
+        self.ui.lSideSettings.setVisible(False)
+
+        self.ui.prevToolButton.setVisible(False)
+        self.ui.nextToolButton.setVisible(False)
+        self.ui.openToolButton.setVisible(False)
+        self.ui.settToolButton.setVisible(False)
+        self.ui.fullToolButton.setVisible(False)
+        self.ui.shufToolButton.setVisible(False)
+
+        self.ui.sidePrevToolButton.setVisible(False)
+        self.ui.sideNextToolButton.setVisible(False)
 
     def goNext(self):
         self.index += 1
