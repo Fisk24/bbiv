@@ -111,6 +111,12 @@ class Main(QMainWindow):
             self.loadMedia(file_string)
             self.ui.nextToolButton.setEnabled(True)
             self.ui.prevToolButton.setEnabled(True)
+            self.ui.sideNextToolButton.setEnabled(True)
+            self.ui.sidePrevToolButton.setEnabled(True)
+            self.ui.rSideNext.setEnabled(True)
+            self.ui.rSidePrev.setEnabled(True)
+            self.ui.lSideNext.setEnabled(True)
+            self.ui.lSidePrev.setEnabled(True)
 
     def initFile(self):
         self.identifyStartingDirectory()
